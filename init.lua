@@ -43,7 +43,9 @@ local function format_size(size)
 end
 
 return {
-	entry = function()
+  entry = function(self, args)
+    -- defaults not to use clipboard, use it only if required by the user
+    local clipboard = args[1] == '--clipboard' or args[1] == '-c'
     local items = get_paths()
 
     local cmd = "du"
@@ -52,11 +54,17 @@ return {
       ya.err("Failed to run diff, error: " .. err)
     else
       local total_size = get_total_size(output.stdout)
-      formatted_size = format_size(tonumber(total_size))
-      ya.clipboard(formatted_size)
+      local formatted_size = format_size(tonumber(total_size))
+
+      local notification_content = "Total size: " .. formatted_size
+      if clipboard then
+        ya.clipboard(formatted_size)
+        notification_content = notification_content .. "\nCopied to clipboard."
+      end
+
       ya.notify {
         title = "What size",
-        content = "Total size: " .. formatted_size .. "\nCopied to clipboard.",
+        content = notification_content,
         timeout = 5,
       }
     end
