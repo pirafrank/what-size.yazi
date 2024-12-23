@@ -43,9 +43,9 @@ local function format_size(size)
 end
 
 return {
-  entry = function(self, args)
+  entry = function(self, job)
     -- defaults not to use clipboard, use it only if required by the user
-    local clipboard = args[1] == '--clipboard' or args[1] == '-c'
+    local clipboard = job.args[1] == '--clipboard' or job.args[1] == '-c'
     local items = get_paths()
 
     local cmd = "du"
