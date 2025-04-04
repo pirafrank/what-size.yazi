@@ -28,11 +28,17 @@ local function get_total_size(items)
     for _, path in ipairs(items) do
       path = path:gsub('"', '\\"')
       local ps_cmd = string.format(
-        [[powershell -Command "& { $p = '%s'; if (Test-Path $p) { if ((Get-Item $p).PSIsContainer) { (Get-ChildItem -LiteralPath $p -Recurse -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { (Get-Item $p).Length } } }"]],
-        path
+      [[powershell -Command "& { $p = '%s'; if (Test-Path $p) { if ((Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum) { (Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { (Get-Item $p).Length } } }"]], 
+      path
       )
       local pipe = io.popen(ps_cmd)
       local result = pipe:read("*a")
+      -- Debug
+      -- ya.notify {
+      --     title = "Debug Output",
+      --     content = result,
+      --     timeout = 5,
+      -- }
       pipe:close()
       local num = tonumber(result)
       if num then total = total + num end
