@@ -11,7 +11,7 @@ A plugin for [yazi](https://github.com/sxyazi/yazi) to calculate the size of the
 ## Requirements
 
 - `du` (default) on Linux. macOS
-- For Windows and macOS users, please install [dua](https://github.com/Byron/dua-cli) (a fast disk usage analyzer written in Rust) and ensure it is in your PATH.  For Linux and macOS users, `dua` may be used as well -- it offers better performance than `du` on large folders.
+- [dua](https://github.com/Byron/dua-cli) is an alternative solution providing a fast disk usage analyzer written in Rust. If you choose this option, install per the instructions and ensure it is in your PATH. It offers better performance than `du` on large folders.
 
 ## Installation
 
@@ -36,7 +36,7 @@ You can pass arguments to the plugin to modify its behavior.
 
 #### clipboard
 
-If you want to copy the result to the clipboard, add `clipboard` as an argument (note the space after `--`):  `plugin what-size -- clipboard`
+If you want to copy the result to the clipboard, add `clipboard` as an argument (note the space after `--`): `plugin what-size -- clipboard`
 
 ```toml
 [manager]
@@ -47,7 +47,7 @@ prepend_keymap = [
 
 #### dua
 
-If you want to use `dua` instead of `du`, add `dua` as an argument (note the space after `--`):  `plugin what-size -- dua`
+If you want to use `dua` instead of `du`, add `dua` as an argument (note the space after `--`): `plugin what-size -- dua`
 
 ```toml
 [manager]
