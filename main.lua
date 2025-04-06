@@ -1,4 +1,3 @@
-
 -- function to get paths of selected elements or current directory
 -- if no elements are selected
 local get_paths = ya.sync(function()
@@ -18,9 +17,30 @@ local get_paths = ya.sync(function()
   return paths
 end)
 
+-- Function to get total size from dua output
+-- dua output format: "\u{1b}[32m1026520530 b\u{1b}[39m \u{1b}[36manythingllm-desktop\u{1b}[39m\n"
+local function get_dua_total_size(stdout)
+  local lines = {}
+  for line in stdout:gmatch("[^\n]+") do lines[#lines + 1] = line end
+  local last_line = lines[#lines]
+  local size_str = last_line:match("(%d+) b")
+  return tonumber(size_str)
+end
+
 -- Function to get total size from output
--- Unix use `du`, Windows use PowerShell
-local function get_total_size(items)
+-- Unix use `du`, Windows use PowerShell, or dua if specified
+local function get_total_size(items, use_dua)
+  -- If dua is specified, use it regardless of platform
+  if use_dua then
+    local output, err = Command("dua"):args({"--format", "bytes"}):args(items):output()
+    if not output or not output.stdout then
+      ya.err("Failed to run dua: " .. (err and err.message or "unknown error"))
+      return nil
+    end
+    return get_dua_total_size(output.stdout)
+  end
+
+  -- Otherwise use platform-specific commands
   local is_windows = package.config:sub(1,1) == '\\'
 
   if is_windows then
@@ -70,13 +90,37 @@ local function format_size(size)
 end
 
 return {
-  -- as per doc: https://yazi-rs.github.io/docs/plugins/overview#functional-plugin
+  -- as per doc: [https://yazi-rs.github.io/docs/plugins/overview#functional-plugin](https://yazi-rs.github.io/docs/plugins/overview#functional-plugin)
   entry = function(_, job)
-    -- defaults not to use clipboard, use it only if required by the user
-    local clipboard = job.args.clipboard == true or job.args[1] == "--clipboard" or job.args[1] == "-c"
+    -- Check for arguments
+    local clipboard = false
+    local use_dua = false
+    
+    -- Parse arguments
+    for _, arg in ipairs(job.args) do
+      if arg == "--clipboard" or arg == "-c" or arg == "clipboard" then
+        clipboard = true
+      elseif arg == "--dua" or arg == "dua" then
+        use_dua = true
+      end
+    end
+    
     local items = get_paths()
 
-    local total_size = get_total_size(items)
+    ya.dbg({
+      items = items,
+      job_args = job.args,
+      use_dua = use_dua,
+      clipboard = clipboard
+    })
+
+    local total_size = get_total_size(items, use_dua)
+    
+    if not total_size then
+      ya.err("Failed to get total size")
+      return
+    end
+    
     local formatted_size = format_size(total_size)
 
     local notification_content = "Total size: " .. formatted_size
