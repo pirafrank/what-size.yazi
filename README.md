@@ -4,12 +4,15 @@ A plugin for [yazi](https://github.com/sxyazi/yazi) to calculate the size of the
 
 ## Compatibility
 
+- yazi `25.x` since commit `fce1778d911621dc57796cdfdf11dcda3c2e28de` ([link](https://github.com/pirafrank/what-size.yazi/commit/fce1778d911621dc57796cdfdf11dcda3c2e28de)).
 - yazi `0.4.x` since commit `2780de5aeef1ed16d1973dd6e0cd4d630c900d56` ([link](https://github.com/pirafrank/what-size.yazi/commit/2780de5aeef1ed16d1973dd6e0cd4d630c900d56)).
 - yazi `0.3.x` up to commit `f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93` ([link](https://github.com/pirafrank/what-size.yazi/commit/f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93)).
 
 ## Requirements
 
-- `du` on Linux. macOS and Windows support is planned.
+- `du` on Linux, PowerShell on Windows.
+
+macOS support is planned (via `du` utility, too).
 
 ## Installation
 
@@ -28,16 +31,43 @@ prepend_keymap = [
 ]
 ```
 
-If you want to copy the result to clipboard, you can add `--clipboard` or `-c` as first argument:
+If you want to copy the result to clipboard, you can add `--clipboard` or `-c` as 2nd positional argument:
 
 ```toml
 [manager]
 prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size --args='--clipboard'", desc = "Calc size of selection or cwd" },
+  { on   = [ ".", "s" ], run  = "plugin what-size -- '--clipboard'", desc = "Calc size of selection or cwd" },
+]
+```
+
+```toml
+[manager]
+prepend_keymap = [
+  { on   = [ ".", "s" ], run  = "plugin what-size -- '-c'", desc = "Calc size of selection or cwd" },
 ]
 ```
 
 Change to whatever keybinding you like.
+
+## Feedback
+
+If you have any feedback, suggestions, or ideas please let me know by opening an issue.
+
+## Dev setup
+
+Check the debug config [here](https://yazi-rs.github.io/docs/plugins/overview/#debugging).
+
+To get debug logs while develoing use `ya.dbg()` in your code, then set the `YAZI_LOG` environment variable to `debug` before running Yazi.
+
+```sh
+YAZI_LOG=debug yazi
+```
+
+Logs will be saved to `~.local/state/yazi/yazi.log` file.
+
+## Contributing
+
+Contributions are welcome. Please fork the repository and submit a PR.
 
 ## License
 
