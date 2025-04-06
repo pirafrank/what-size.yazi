@@ -28,7 +28,7 @@ local function get_total_size(items)
     for _, path in ipairs(items) do
       path = path:gsub('"', '\\"')
       local ps_cmd = string.format(
-      [[powershell -Command "& { $p = '%s'; if (Test-Path $p) { if ((Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum) { (Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { (Get-Item $p).Length } } }"]], 
+      [[powershell -Command "& { $p = '%s'; if (Test-Path $p) { if ((Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum) { (Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { (Get-Item $p).Length } } }"]],
       path
       )
       local pipe = io.popen(ps_cmd)
@@ -70,9 +70,10 @@ local function format_size(size)
 end
 
 return {
-  entry = function(self, job)
+  -- as per doc: https://yazi-rs.github.io/docs/plugins/overview#functional-plugin
+  entry = function(_, job)
     -- defaults not to use clipboard, use it only if required by the user
-    local clipboard = job.args.clipboard or job.args[1] == '-c'
+    local clipboard = job.args.clipboard == true or job.args[1] == "--clipboard" or job.args[1] == "-c"
     local items = get_paths()
 
     local total_size = get_total_size(items)
@@ -87,7 +88,7 @@ return {
     ya.notify {
       title = "What size",
       content = notification_content,
-      timeout = 5,
+      timeout = 4,
     }
   end,
 }
