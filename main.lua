@@ -200,13 +200,14 @@ return {
   entry = function(_, job)
     local args = parse_args(job, {
       clipboard = { default = false, aliases = {"-c", "clipboard"} },
+      dua = { default = false, aliases = {"dua"} },
       no_dua = { default = false, aliases = {"no-dua"} }
     })
 
     local items = get_paths()
     local total_size = nil
 
-    local use_dua = not args.no_dua and is_dua_present()
+    local use_dua = args.dua or (not args.no_dua and is_dua_present())
 
     if use_dua then
       total_size = get_total_size_dua(items)

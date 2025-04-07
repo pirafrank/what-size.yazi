@@ -55,6 +55,17 @@ prepend_keymap = [
 ]
 ```
 
+#### dua
+
+If you want to force the plugin to use `dua` to skip the `dua --version` test:
+
+```toml
+[manager]
+prepend_keymap = [
+  { on   = [ ".", "s" ], run  = "plugin what-size -- dua", desc = "Calc size of selection or cwd" },
+]
+```
+
 #### no-dua
 
 To prevent the plugin from automatically using `dua` even if it's installed, pass the `no-dua` argument:
