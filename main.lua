@@ -151,7 +151,7 @@ local function format_size(size)
 end
 
 return {
-  -- as per doc: [https://yazi-rs.github.io/docs/plugins/overview#functional-plugin](https://yazi-rs.github.io/docs/plugins/overview#functional-plugin)
+  -- as per doc: https://yazi-rs.github.io/docs/plugins/overview#functional-plugin
   entry = function(_, job)
     local args = parse_args(job, {
       clipboard = { default = false, aliases = {"-c", "clipboard"} } 

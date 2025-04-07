@@ -21,7 +21,7 @@ what-size supports Yazi on Linux, macOS, and Windows.
 ## Requirements
 
 - `du` on Linux, PowerShell on Windows.
-- macOS support is planned (via `du` utility, too).
+- macOS (coded but untested -- please submit an issue if needed)
 
 ## Installation
 
@@ -31,7 +31,7 @@ ya pack -a 'pirafrank/what-size'
 
 ## Usage
 
-Add this to your `~/.config/yazi/keymap.toml`: 
+Add this to your `~/.config/yazi/keymap.toml`:
 
 ```toml
 [manager]
