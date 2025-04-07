@@ -31,7 +31,7 @@ ya pack -a 'pirafrank/what-size'
 
 ## Usage
 
-Add this to your `~/.config/yazi/keymap.toml`: 
+Add this to your `~/.config/yazi/keymap.toml`:
 
 ```toml
 [manager]
