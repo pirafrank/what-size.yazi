@@ -20,8 +20,7 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ## Requirements
 
-- `du` on Linux, PowerShell on Windows.
-- macOS (coded but untested -- please submit an issue if needed)
+- `du` (default) on Linux/macOS, PowerShell on Windows.
 
 ## Installation
 
