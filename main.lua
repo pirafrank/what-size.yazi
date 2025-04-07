@@ -96,14 +96,58 @@ local function parse_args(job, expected_args)
   return parsed_args
 end
 
+-- Function to check if dua is present in the PATH
+local function is_dua_present()
+  ya.dbg("Checking for dua presence...")
+  -- Try running `dua --version`. If it succeeds without error, dua is likely present.
+  local _, err = Command("dua"):arg("--version"):output()
+  local present = err == nil
+  ya.dbg("dua present:", present)
+  return present
+end
+
+-- Parses the output of `dua --format bytes`
+local function parse_dua_output(stdout)
+  local lines = {}
+  for line in stdout:gmatch("[^\n]+") do lines[#lines + 1] = line end
+  local last_line = lines[#lines]
+  if not last_line then
+    ya.err("dua output was empty or did not contain lines.")
+    return nil
+  end
+  local size_str = last_line:match("(%d+) b")
+  if not size_str then
+    ya.err("Could not parse size from dua output: " .. last_line)
+    return nil
+  end
+  return tonumber(size_str)
+end
+
+-- Function to get total size using dua
+local function get_total_size_dua(items)
+  local output, err = Command("dua"):arg("--format"):arg("bytes"):args(items):output()
+  if err or not output or not output.stdout then
+    ya.err("Failed to run dua: " .. (err and err.message or "unknown error/no output"))
+    return nil -- Indicate failure
+  else
+    local size = parse_dua_output(output.stdout)
+    if not size then
+      ya.err("Failed to parse dua output.")
+      return nil -- Indicate failure
+    end
+    return size
+  end
+end
+
 -- Function to get total size from output
 -- Unix use `du`, Windows use PowerShell
-local function get_total_size(items)
+local function get_total_size_platform_specific(items)
   -- Otherwise use platform-specific commands
   local is_windows = package.config:sub(1,1) == '\\'
 
   if is_windows then
     local total = 0
+    ya.dbg("Using PowerShell for size calculation.")
     for _, path in ipairs(items) do
       path = path:gsub('"', '\\"')
       local ps_cmd = string.format(
@@ -124,6 +168,7 @@ local function get_total_size(items)
     end
     return total
   else
+    ya.dbg("Using `du` for size calculation.")
     local cmd = "du"
     local output, err = Command(cmd):arg("-scb"):args(items):output()
     if not output then
@@ -152,13 +197,36 @@ return {
   -- as per doc: [https://yazi-rs.github.io/docs/plugins/overview#functional-plugin](https://yazi-rs.github.io/docs/plugins/overview#functional-plugin)
   entry = function(_, job)
     local args = parse_args(job, {
-      clipboard = { default = false, aliases = {"-c", "clipboard"} } 
+      clipboard = { default = false, aliases = {"-c", "clipboard"} },
+      no_dua = { default = false, aliases = {"no-dua"} }
     })
 
     local items = get_paths()
+    local total_size = nil
 
-    local total_size = get_total_size(items)
-    
+    local use_dua = not args.no_dua and is_dua_present()
+
+    if use_dua then
+      total_size = get_total_size_dua(items)
+      -- If dua fails (returns nil), we intentionally fall through to platform specific
+      if total_size then
+        ya.dbg("DUA calculation successful.")
+      else
+        ya.err("DUA calculation failed, falling back to platform specific.")
+        ya.notify {
+          title = "What size",
+          content = "dua failed, add -- no-dua",
+          timeout = 4,
+        }
+      end
+    end
+
+    -- Use platform specific if dua is disabled, not present, or failed
+    if not total_size then
+      ya.dbg("Calculating size using platform-specific command.")
+      total_size = get_total_size_platform_specific(items)
+    end
+
     if not total_size then
       ya.err("Failed to get total size")
       return

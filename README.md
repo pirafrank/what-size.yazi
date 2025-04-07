@@ -10,8 +10,8 @@ A plugin for [yazi](https://github.com/sxyazi/yazi) to calculate the size of the
 
 ## Requirements
 
-- `du` on Linux, PowerShell on Windows.
-- macOS support is planned (via `du` utility, too).
+- `du` (default) on Linux/macOS, PowerShell on Windows.
+- [dua](https://github.com/Byron/dua-cli) (optional): If `dua` is found in your PATH, it will be used automatically for better performance. Ensure it's installed if you want to use it.
 
 ## Installation
 
@@ -42,6 +42,17 @@ If you want to copy the result to clipboard, you can use the `clipboard` argumen
 [manager]
 prepend_keymap = [
   { on   = [ ".", "s" ], run  = "plugin what-size -- clipboard", desc = "Calc size of selection or cwd" },
+]
+```
+
+#### no-dua
+
+To prevent the plugin from automatically using `dua` even if it's installed, pass the `no-dua` argument:
+
+```toml
+[manager]
+prepend_keymap = [
+  { on   = [ ".", "s" ], run  = "plugin what-size -- no-dua", desc = "Calc size (force non-dua)" },
 ]
 ```
 
