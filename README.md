@@ -10,8 +10,8 @@ A plugin for [yazi](https://github.com/sxyazi/yazi) to calculate the size of the
 
 ## Requirements
 
-- `du` (default) on Linux. macOS
-- [dua](https://github.com/Byron/dua-cli) is an alternative solution providing a fast disk usage analyzer written in Rust. If you choose this option, install per the instructions and ensure it is in your PATH. It offers better performance than `du` on large folders.
+- `du` on Linux, PowerShell on Windows.
+- macOS support is planned (via `du` utility, too).
 
 ## Installation
 
@@ -21,7 +21,7 @@ ya pack -a 'pirafrank/what-size'
 
 ## Usage
 
-Add this to your `~/.config/yazi/keymap.toml`:
+Add this to your `~/.config/yazi/keymap.toml`: 
 
 ```toml
 [manager]
@@ -36,23 +36,12 @@ You can pass arguments to the plugin to modify its behavior.
 
 #### clipboard
 
-If you want to copy the result to the clipboard, add `clipboard` as an argument (note the space after `--`): `plugin what-size -- clipboard`
+If you want to copy the result to clipboard, you can use the `clipboard` argument:
 
 ```toml
 [manager]
 prepend_keymap = [
   { on   = [ ".", "s" ], run  = "plugin what-size -- clipboard", desc = "Calc size of selection or cwd" },
-]
-```
-
-#### dua
-
-If you want to use `dua` instead of `du`, add `dua` as an argument (note the space after `--`): `plugin what-size -- dua`
-
-```toml
-[manager]
-prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- dua", desc = "Calc size of selection or cwd" },
 ]
 ```
 
