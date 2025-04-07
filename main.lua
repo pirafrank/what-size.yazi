@@ -124,16 +124,18 @@ local function get_total_size(items)
     end
     return total
   else
-    local cmd = "du"
-    local output, err = Command(cmd):arg("-scb"):args(items):output()
+    local arg = ya.target_os() == "macos" and "-scA" or "-scb"
+    local output, err = Command("du"):arg(arg):args(items):output()
     if not output then
       ya.err("Failed to run du: " .. err)
     end
     local lines = {}
-    for line in output.stdout:gmatch("[^\n]+") do lines[#lines + 1] = line end
+    for line in output.stdout:gmatch("[^\n]+") do
+      lines[#lines + 1] = line
+    end
     local last_line = lines[#lines]
     local size = tonumber(last_line:match("^(%d+)"))
-    return size
+    return ya.target_os() == "macos" and size * 512 or size
   end
 end
 
