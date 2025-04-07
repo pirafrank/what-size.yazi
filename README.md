@@ -20,8 +20,8 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ## Requirements
 
-- `du` on Linux and macOS
-- PowerShell on Windows
+- `du` (default) on Linux/macOS, PowerShell on Windows.
+- [dua](https://github.com/Byron/dua-cli) (optional): If `dua` is found in your PATH, it will be used automatically for better performance. Ensure it's installed if you want to use it.
 
 ## Installation
 
@@ -40,19 +40,40 @@ prepend_keymap = [
 ]
 ```
 
-If you want to copy the result to clipboard, you can add `--clipboard` or `-c` as 2nd positional argument:
+### Arguments
+
+You can pass arguments to the plugin to modify its behavior.
+
+#### clipboard
+
+If you want to copy the result to clipboard, you can use the `clipboard` argument:
 
 ```toml
 [manager]
 prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '--clipboard'", desc = "Calc size of selection or cwd" },
+  { on   = [ ".", "s" ], run  = "plugin what-size -- clipboard", desc = "Calc size of selection or cwd" },
 ]
 ```
 
+#### dua
+
+If you want to force the plugin to use `dua` to skip the `dua --version` test:
+
 ```toml
 [manager]
 prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '-c'", desc = "Calc size of selection or cwd" },
+  { on   = [ ".", "s" ], run  = "plugin what-size -- dua", desc = "Calc size of selection or cwd" },
+]
+```
+
+#### no-dua
+
+To prevent the plugin from automatically using `dua` even if it's installed, pass the `no-dua` argument:
+
+```toml
+[manager]
+prepend_keymap = [
+  { on   = [ ".", "s" ], run  = "plugin what-size -- no-dua", desc = "Calc size (force non-dua)" },
 ]
 ```
 
