@@ -20,8 +20,7 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ## Requirements
 
-- `du` on Linux and macOS
-- PowerShell on Windows
+- `du` (default) on Linux/macOS, PowerShell on Windows.
 
 ## Installation
 
@@ -40,19 +39,18 @@ prepend_keymap = [
 ]
 ```
 
-If you want to copy the result to clipboard, you can add `--clipboard` or `-c` as 2nd positional argument:
+### Arguments
+
+You can pass arguments to the plugin to modify its behavior.
+
+#### clipboard
+
+If you want to copy the result to clipboard, you can use the `clipboard` argument:
 
 ```toml
 [manager]
 prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '--clipboard'", desc = "Calc size of selection or cwd" },
-]
-```
-
-```toml
-[manager]
-prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '-c'", desc = "Calc size of selection or cwd" },
+  { on   = [ ".", "s" ], run  = "plugin what-size -- clipboard", desc = "Calc size of selection or cwd" },
 ]
 ```
 
