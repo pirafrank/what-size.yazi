@@ -46,7 +46,7 @@ local function get_total_size(items)
     return total
   else
     local arg = ya.target_os() == "macos" and "-scA" or "-scb"
-    local output, err = Command("du"):arg(arg):args(items):output()
+    local output, err = Command("du"):arg(arg):arg(items):output()
     if not output then
       ya.err("Failed to run du: " .. err)
     end
