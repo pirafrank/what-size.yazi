@@ -9,14 +9,15 @@ what-size supports Yazi on Linux, macOS, and Windows.
 ### OS
 
 - Linux since first commit
-- macOS since commit `42c6a0efb7245badb16781da5380be1a1705f3f2` ([link](https://github.com/pirafrank/what-size.yazi/commit/42c6a0efb7245badb16781da5380be1a1705f3f2))
-- Windows since commit `4a56ead2a84c5969791fb17416e0b451ab906c5d` ([link](https://github.com/pirafrank/what-size.yazi/commit/4a56ead2a84c5969791fb17416e0b451ab906c5d))
+- macOS since commit `42c6a0e` ([link](https://github.com/pirafrank/what-size.yazi/commit/42c6a0efb7245badb16781da5380be1a1705f3f2))
+- Windows since commit `4a56ead` ([link](https://github.com/pirafrank/what-size.yazi/commit/4a56ead2a84c5969791fb17416e0b451ab906c5d))
 
 ### Yazi
 
-- yazi `25.x` since commit `fce1778d911621dc57796cdfdf11dcda3c2e28de` ([link](https://github.com/pirafrank/what-size.yazi/commit/fce1778d911621dc57796cdfdf11dcda3c2e28de)).
-- yazi `0.4.x` since commit `2780de5aeef1ed16d1973dd6e0cd4d630c900d56` ([link](https://github.com/pirafrank/what-size.yazi/commit/2780de5aeef1ed16d1973dd6e0cd4d630c900d56)).
-- yazi `0.3.x` up to commit `f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93` ([link](https://github.com/pirafrank/what-size.yazi/commit/f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93)).
+- yazi `25.5.28` and onwards since commit `c5c939b` ([link](https://github.com/pirafrank/what-size.yazi/commit/c5c939bb37ec1d132c942cf5724d4e847acc2977))
+- yazi `25.x`-`25.4.8` since commit `fce1778` ([link](https://github.com/pirafrank/what-size.yazi/commit/fce1778d911621dc57796cdfdf11dcda3c2e28de))
+- yazi `0.4.x` since commit `2780de5` ([link](https://github.com/pirafrank/what-size.yazi/commit/2780de5aeef1ed16d1973dd6e0cd4d630c900d56))
+- yazi `0.3.x` up to commit `f08f7f2` ([link](https://github.com/pirafrank/what-size.yazi/commit/f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93))
 
 ## Requirements
 
