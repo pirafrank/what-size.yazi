@@ -27,6 +27,13 @@ what-size supports Yazi on Linux, macOS, and Windows.
 ## Installation
 
 ```sh
+ya pkg add pirafrank/what-size
+```
+
+or
+
+**DEPRECATED**
+```sh
 ya pack -a 'pirafrank/what-size'
 ```
 
@@ -35,26 +42,26 @@ ya pack -a 'pirafrank/what-size'
 Add this to your `~/.config/yazi/keymap.toml`:
 
 ```toml
-[manager]
-prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size", desc = "Calc size of selection or cwd" },
-]
+[[mgr.prepend_keymap]]
+on = [ ".", "s" ]
+run  = "plugin what-size"
+desc = "Calc size of selection or cwd" 
 ```
 
 If you want to copy the result to clipboard, you can add `--clipboard` or `-c` as 2nd positional argument:
 
 ```toml
-[manager]
-prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '--clipboard'", desc = "Calc size of selection or cwd" },
-]
+[[mgr.prepend_keymap]]
+on   = [ ".", "s" ]
+run  = "plugin what-size -- '--clipboard'"
+desc = "Calc size of selection or cwd"
 ```
 
 ```toml
-[manager]
-prepend_keymap = [
-  { on   = [ ".", "s" ], run  = "plugin what-size -- '-c'", desc = "Calc size of selection or cwd" },
-]
+[[mgr.prepend_keymap]]
+on = [ ".", "s" ]
+run = "plugin what-size -- '-c'"
+desc = "Calc size of selection or cwd"
 ```
 
 Change to whatever keybinding you like.
