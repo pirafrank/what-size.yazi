@@ -46,7 +46,13 @@ local function get_total_size(items)
     return total
   else
     local arg = ya.target_os() == "macos" and "-scA" or "-scb"
-    local output, err = Command("du"):arg(arg):arg(items):output()
+    -- pass args as string
+    local cmd = Command("du"):arg(arg)
+    for _, path in ipairs(items) do
+      cmd = cmd:arg(path)
+    end
+    local output, err = cmd:output()
+
     if not output then
       ya.err("Failed to run du: " .. err)
     end
