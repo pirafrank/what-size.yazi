@@ -21,13 +21,13 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ## Requirements
 
-### Before Yazi's version 25.2.28
+### Before Yazi's version 25.5.28
 
 - Use this commit: [Old version](https://github.com/pirafrank/what-size.yazi/commit/d8966568f2a80394bf1f9a1ace6708ddd4cc8154)
 - `du` on Linux and macOS
 - PowerShell on Windows
 
-### On Yazi's version 25.2.28 or newer
+### On Yazi's version 25.5.28 or newer
 
 - No requirement
 
