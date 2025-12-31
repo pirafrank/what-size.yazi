@@ -21,8 +21,15 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ## Requirements
 
+### Before Yazi's version 25.5.28
+
+- Use this commit: [Old version](https://github.com/pirafrank/what-size.yazi/commit/d8966568f2a80394bf1f9a1ace6708ddd4cc8154)
 - `du` on Linux and macOS
 - PowerShell on Windows
+
+### On Yazi's version 25.5.28 or newer
+
+- No requirement
 
 ## Installation
 
@@ -38,6 +45,8 @@ ya pack -a 'pirafrank/what-size'
 ```
 
 ## Usage
+
+### Keymap
 
 Add this to your `~/.config/yazi/keymap.toml`:
 
@@ -65,6 +74,18 @@ desc = "Calc size of selection or cwd"
 ```
 
 Change to whatever keybinding you like.
+
+### User interface (optional)
+
+If you want to place the size value exactly where you want, modify the priority value. Also changing two strings `LEFT` and `RIGHT` will add them to the left and right side of the value. Remember to add to and change these lines inside your `init.lua` file if you want to customize, or the plugin will use this configuration by default:
+
+```lua
+require("what-size"):setup({
+    priority = 400,
+    LEFT = "",
+    RIGHT = " ",
+})
+```
 
 ## Feedback
 
