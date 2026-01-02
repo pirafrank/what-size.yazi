@@ -82,6 +82,18 @@ YAZI_LOG=debug yazi
 
 Logs will be saved to `~.local/state/yazi/yazi.log` file.
 
+### Plugin definition
+
+Run the following to add the `types` plugin dependency:
+
+```sh
+ya pkg add yazi-rs/plugins:types
+```
+
+Docs:
+
+- https://github.com/yazi-rs/plugins/tree/main/types.yazi
+
 ## Contributing
 
 Contributions are welcome. Please fork the repository and submit a PR.
