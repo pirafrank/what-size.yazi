@@ -1,231 +1,102 @@
---- @since 25.5.28
--- This plugin is now only supporting Yazi's version 25.5.28 or newer
--- since commit https://github.com/sxyazi/yazi/pull/2695
 
--- TODO: Asynchronous calculating and dynamic displaying in statusline,
--- perhaps by using this:
---      https://yazi-rs.github.io/docs/plugins/utils/#ps.sub
--- and by using ya.render() method
--- See also:
---      https://github.com/sxyazi/yazi/pull/1903
---      https://yazi-rs.github.io/docs/dds/#kinds
---      https://github.com/sxyazi/yazi/pull/2210
---      https://github.com/imsi32/yatline.yazi
--- TODO: Add options to choose displaying in popup box or in statusline
--- TODO: Add spotter and previewer widget to support simpler displaying
--- TODO: Remove note [1] and [2] after add them to the setup
--- configuration
-
--- Get selected paths {{{1
-local get_selected_paths = ya.sync(function(state)
-    local result = {}
-    if cx and cx.active and cx.active.selected then
-        for _, url in pairs(cx.active.selected) do
-            result[#result + 1] = url
-        end
-    end
-    return result
-end)
--- }}}1
--- Get current working directory in sync context {{{1
-local get_cwd = ya.sync(function(state)
-    if cx and cx.active and cx.active.current and cx.active.current.cwd then
-        return cx.active.current.cwd
-    end
-    return nil
-end)
--- }}}1
--- Function to get paths of selected files or current directory {{{1
---- @param selected table Table of selected urls
---- @return paths table Table of selected urls
-local function get_paths(selected)
-    -- If no files are selected, get current directory
-    if #selected == 0 then
-        local paths = {}
-        -- Try fs.cwd() first (async, optimized for slow devices)
-        local cwd, err = fs.cwd()
-        if cwd then
-            paths[1] = cwd
-        else
-            -- Fallback to cx.active.current.cwd (via sync block)
-            local sync_cwd = get_cwd()
-            if sync_cwd then
-                paths[1] = sync_cwd
-            else
-                ya.notify {
-                    title = "What size",
-                    content = "Cannot get current working directory: " .. (err or "unknown error"),
-                    timeout = 5,
-                    level = "error",
-                }
-            end
-        end
-        return paths
+-- function to get paths of selected elements or current directory
+-- if no elements are selected
+local get_paths = ya.sync(function()
+  local paths = {}
+  -- get selected files
+  for _, u in pairs(cx.active.selected) do
+    paths[#paths + 1] = tostring(u)
+  end
+  -- if no files are selected, get current directory
+  if #paths == 0 then
+    if cx.active.current.cwd then
+      paths[1] = tostring(cx.active.current.cwd)
     else
-        -- This variable is a table of urls already
-        return selected
+      ya.err("what-size would return nil paths")
     end
-end
--- }}}1
--- Function to get total size using Yazi's fs.calc_size API {{{1
--- See: https://github.com/sxyazi/yazi/pull/2695
--- See: https://github.com/sxyazi/yazi/blob/main/yazi-plugin/preset/plugins/folder.lua
+  end
+  return paths
+end)
+
+-- Function to get total size from output
+-- Unix use `du`, Windows use PowerShell
 local function get_total_size(items)
+  local is_windows = package.config:sub(1,1) == '\\'
+
+  if is_windows then
     local total = 0
-    for _, url in ipairs(items) do
-        local it = fs.calc_size(url)
-        while true do
-            local next = it:recv()
-            if next then
-                total = total + next
-            else
-                break
-            end
-        end
+    for _, path in ipairs(items) do
+      path = path:gsub('"', '\\"')
+      local ps_cmd = string.format(
+      [[powershell -Command "& { $p = '%s'; if (Test-Path $p) { if ((Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum) { (Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { (Get-Item $p).Length } } }"]],
+      path
+      )
+      local pipe = io.popen(ps_cmd)
+      local result = pipe:read("*a")
+      -- Debug
+      -- ya.notify {
+      --     title = "Debug Output",
+      --     content = result,
+      --     timeout = 5,
+      -- }
+      pipe:close()
+      local num = tonumber(result)
+      if num then total = total + num end
     end
     return total
+  else
+    local arg = ya.target_os() == "macos" and "-scA" or "-scb"
+    -- pass args as string
+    local cmd = Command("du"):arg(arg)
+    for _, path in ipairs(items) do
+      cmd = cmd:arg(path)
+    end
+    local output, err = cmd:output()
+
+    if not output then
+      ya.err("Failed to run du: " .. err)
+    end
+    local lines = {}
+    for line in output.stdout:gmatch("[^\n]+") do
+      lines[#lines + 1] = line
+    end
+    local last_line = lines[#lines]
+    local size = tonumber(last_line:match("^(%d+)"))
+    return ya.target_os() == "macos" and size * 512 or size
+  end
 end
--- }}}1
--- Function to format files/folders size {{{1
+
+-- Function to format file size
 local function format_size(size)
-    local units = { "B", "KB", "MB", "GB", "TB" }
-    local unit_index = 1
-    while size > 1024 and unit_index < #units do
-        size = size / 1024
-        unit_index = unit_index + 1
-    end
-    return string.format("%.2f %s", size, units[unit_index])
+  local units = { "B", "KB", "MB", "GB", "TB" }
+  local unit_index = 1
+  while size > 1024 and unit_index < #units do
+    size = size / 1024
+    unit_index = unit_index + 1
+  end
+  return string.format("%.2f %s", size, units[unit_index])
 end
--- }}}1
--- Generic setter for any state field {{{1
-local set_state = ya.sync(function(state, field, value)
-    state[field] = value
-end)
--- }}}1
--- Generic getter for any state field {{{1
-local get_state = ya.sync(function(state, field)
-    return state[field] or nil
-end)
--- }}}1
--- Get selecting state {{{1
-local get_selected = ya.sync(function()
-    return (not cx.active.mode.is_visual) and (#cx.active.selected ~= 0)
-end)
--- }}}1
--- Set separators {{{1
-local set_separator = ya.sync(function(state, table)
-    if table and table.LEFT and table.RIGHT then
-        state.LEFT = table.LEFT
-        state.RIGHT = table.RIGHT
-    else
-        state.LEFT = ""
-        state.RIGHT = ""
-    end
-end)
--- }}}1
--- Get separators {{{1
-local get_separator = ya.sync(function(state)
-    return {state.LEFT, state.RIGHT}
-end)
--- }}}1
--- Redraw statusline {{{1
-local redraw_statusline = ya.sync(function(state)
-    ya.render()
-end)
--- }}}1
--- Set ui line in statusline for size, clean up when no selection exists {{{1
--- @return of get_state("renewed_state") number or nil Returning -1
---     means never show the size - suitable for setup function;
---     returning 0 means the size will be shown after triggering the
---     calculation, but without unselect the selections, or it will be
---     hidden after nothing is selected; returning 1 means hidden when
---     nothing is selected as said.
-local set_ui_line = function(state)
-    local sep_left, sep_right = table.unpack(get_separator())
 
-    if get_state("renewed_state") == -1 then
-        return ""
-    else
-        if not get_selected() then
-            if not get_state("is_held") then
-                set_state("renewed_state", 1)
-                return ""
-            end
-            -- NOTE [1]: Set this line if DON'T want to clear the value
-            -- in the statusline when move the cursor, after calculating
-            -- with NO selection(s). Or just return ""
-            return ui.Span(sep_left .. get_state("size") .. sep_right)
-        end
-        if get_state("renewed_state") == 0 then
-            return ui.Span(sep_left .. get_state("size") .. sep_right)
-        else
-            -- NOTE [2]: Set this line if want to clear the value in the
-            -- statusline when move the cursor, after calculating WITH 
-            -- selection: return ui.Span(sep_left .. get_state("size") .. sep_right)
-            -- or just remove after the unselection like below
-            return ""
-        end
-    end
-end
--- }}}1
 return {
-    entry = function(self, job)
-        local clipboard = job.args.clipboard or job.args[1] == '-c'
+  -- as per doc: https://yazi-rs.github.io/docs/plugins/overview#functional-plugin
+  entry = function(_, job)
+    -- defaults not to use clipboard, use it only if required by the user
+    local clipboard = job.args.clipboard == true or job.args[1] == "--clipboard" or job.args[1] == "-c"
+    local items = get_paths()
 
-        local selected = get_selected_paths()
-        -- Keep showing the size after CWD calculation (no selections)
-        if #selected == 0 then
-            set_state("is_held", true)
-        else
-            set_state("is_held", false)
-        end
+    local total_size = get_total_size(items)
+    local formatted_size = format_size(total_size)
 
-        local items = get_paths(selected)
-        if not items or #items == 0 then
-            ya.notify {
-                title = "What size",
-                content = "Failed to get paths",
-                timeout = 5,
-            }
-            return
-        end
+    local notification_content = "Total size: " .. formatted_size
+    if clipboard then
+      ya.clipboard(formatted_size)
+      notification_content = notification_content .. "\nCopied to clipboard."
+    end
 
-        local total_size = get_total_size(items)
-        if not total_size then
-            ya.notify {
-                title = "What size",
-                content = "Failed to calculate size",
-                timeout = 5,
-            }
-            return
-        end
-
-        local formatted_size = format_size(total_size)
-
-        if clipboard then
-            ya.clipboard(formatted_size)
-            ya.notify {
-                title = "What size",
-                content = formatted_size .. "\nCopied to clipboard.",
-                timeout = 5,
-            }
-        end
-
-        set_state("size", formatted_size)
-        set_state("renewed_state", 0)
-        redraw_statusline()
-    end,
-
-    setup = function(state, opts)
-        opts = opts or {}
-        local priority = opts.priority or 400
-        set_separator(opts)
-        set_state("renewed_state", -1)
-
-        if Status and type(Status.children_add) == "function" then
-            Status:children_add(set_ui_line, priority, Status.RIGHT)
-        else
-            ya.err("Failed to initialize status bar: Status or children_add not available")
-        end
-    end,
+    ya.notify {
+      title = "What size",
+      content = notification_content,
+      timeout = 4,
+    }
+  end,
 }
