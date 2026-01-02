@@ -173,11 +173,14 @@ return {
         local clipboard = job.args.clipboard or job.args[1] == '-c'
 
         local selected = get_selected_paths()
+        local prepend_msg = ""
         -- Keep showing the size after CWD calculation (no selections)
         if #selected == 0 then
             set_state("is_held", true)
+            prepend_msg = "Current Dir: "
         else
             set_state("is_held", false)
+            prepend_msg = "Selected: "
         end
 
         local items = get_paths(selected)
@@ -202,14 +205,16 @@ return {
 
         local formatted_size = format_size(total_size)
 
+        local notification_content = prepend_msg .. formatted_size
         if clipboard then
             ya.clipboard(formatted_size)
-            ya.notify {
-                title = "What size",
-                content = formatted_size .. "\nCopied to clipboard.",
-                timeout = 5,
-            }
+            notification_content = notification_content .. "\nCopied to clipboard."
         end
+        ya.notify {
+            title = "What size",
+            content = notification_content,
+            timeout = 4,
+        }
 
         set_state("size", formatted_size)
         set_state("renewed_state", 0)
