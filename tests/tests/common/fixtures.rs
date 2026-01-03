@@ -1,4 +1,4 @@
-use super::env::{PTY_COLS, PTY_ROWS};
+use super::env::*;
 use portable_pty::{Child, CommandBuilder, NativePtySystem, PtySize, PtySystem};
 use std::env;
 use std::io::{Read, Write};
@@ -76,36 +76,6 @@ impl Drop for YaziTestFixture {
         let _ = std::fs::remove_dir_all(&self.test_dir);
         let _ = std::fs::remove_dir_all(&self.config_dir);
     }
-}
-
-/// Copy test config files to the temporary config directory
-fn copy_test_config(plugin_dir: &PathBuf, config_dir: &PathBuf) {
-    let test_config_dir = plugin_dir.join("tests/test_config");
-
-    if test_config_dir.exists() {
-        for entry in
-            std::fs::read_dir(&test_config_dir).expect("Failed to read test_config directory")
-        {
-            let entry = entry.expect("Failed to get entry");
-            let path = entry.path();
-            let dest = config_dir.join(path.file_name().expect("Failed to get file name"));
-            let _ = std::fs::copy(&path, dest);
-        }
-    }
-}
-
-/// Create plugin symlink in the config directory
-fn create_plugin_symlink(plugin_dir: &PathBuf, config_dir: &PathBuf) {
-    let plugins_dir = config_dir.join("plugins");
-    std::fs::create_dir_all(&plugins_dir).expect("Failed to create plugins dir");
-    let plugin_link = plugins_dir.join("what-size.yazi");
-
-    #[cfg(unix)]
-    std::os::unix::fs::symlink(&plugin_dir, &plugin_link).expect("Failed to create plugin symlink");
-
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(&plugin_dir, &plugin_link)
-        .expect("Failed to create plugin symlink");
 }
 
 /// Spawn Yazi in a PTY and return the child process and I/O handles

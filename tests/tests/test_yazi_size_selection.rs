@@ -6,7 +6,7 @@ use vt100;
 mod common;
 use common::env::*;
 use common::fixtures::{YaziTestConfig, YaziTestFixture};
-use common::helpers::*;
+use common::pty_helpers::*;
 
 #[test]
 #[serial]
