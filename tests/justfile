@@ -31,11 +31,22 @@ better: fmt lint
 fix:
   cargo clippy -- --no-deps -D warnings --fix --allow-dirty
 
-# Run all tests
 # Note: do NOT use the `--nocapture` flag here unless you want to debug
 #       or it will pollute the terminal with partial yazi TUI in output.
+# Run all tests
 test:
-  cargo test
+  cargo test --package what-size-yazi-tester --test test_yazi_size_cwd
+  cargo test --package what-size-yazi-tester --test test_yazi_size_selection
+  xvfb-run --auto-servernum cargo test --package what-size-yazi-tester --test test_yazi_size_cwd_clipboard
+  xvfb-run --auto-servernum cargo test --package what-size-yazi-tester --test test_yazi_size_selection_clipboard
+
+# Note: this may pollute your terminal because of printing of PTY content to sysout!
+# Run all tests with output visible
+debug:
+  cargo test --package what-size-yazi-tester --test test_yazi_size_cwd -- --nocapture
+  cargo test --package what-size-yazi-tester --test test_yazi_size_selection -- --nocapture
+  xvfb-run --auto-servernum cargo test --package what-size-yazi-tester --test test_yazi_size_cwd_clipboard -- --nocapture
+  xvfb-run --auto-servernum cargo test --package what-size-yazi-tester --test test_yazi_size_selection_clipboard -- --nocapture
 
 # Get errors and warnings without running the tests
 warnings:

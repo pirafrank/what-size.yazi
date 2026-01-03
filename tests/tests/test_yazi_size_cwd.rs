@@ -57,7 +57,7 @@ fn test_yazi_loads_with_plugin() {
         "Yazi should display test directory contents"
     );
 
-    // Try to trigger the plugin by sending the keymap sequence (., s)
+    // Trigger the plugin by sending the keymap sequence (., s)
     println!("\nSending keymap sequence '.' then 's'...");
     send_keys(&mut fixture.writer, ".").expect("Failed to send '.'");
     send_keys(&mut fixture.writer, "s").expect("Failed to send 's'");

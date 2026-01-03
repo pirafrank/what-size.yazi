@@ -41,7 +41,7 @@ fn test_yazi_plugin_with_selection() {
     println!("\nSelecting first file with Space...");
     send_keys(&mut fixture.writer, " ").expect("Failed to send Space");
 
-    // Trigger plugin
+    // Trigger the plugin by sending the keymap sequence (., s)
     println!("Triggering plugin with '.s'...");
     send_keys(&mut fixture.writer, ".").expect("Failed to send '.'");
     send_keys(&mut fixture.writer, "s").expect("Failed to send 's'");
