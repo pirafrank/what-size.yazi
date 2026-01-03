@@ -168,6 +168,8 @@ local set_ui_line = function(state)
     end
 end
 -- }}}1
+
+--- @since 25.12.29
 return {
     entry = function(self, job)
         local clipboard = job.args.clipboard or job.args[1] == '-c'
