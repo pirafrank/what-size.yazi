@@ -1,0 +1,37 @@
+name: Tests
+run-name: Tests on ${{ github.ref_name }}
+
+on:
+  push:
+    paths-include:
+      - '**.lua'
+      - '.github/workflows/test.yml'
+  pull_request:
+    paths-include:
+      - '**.lua'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+
+jobs:
+  ci_tests:
+    name: CI Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Setup just runner
+        uses: extractions/setup-just@v2
+
+      - name: Install yazi
+        run: cargo install --locked yazi
+
+      - name: Install clipboard and xvfb
+        run: sudo apt-get update && sudo apt-get install -y xclip xvfb
+
+      - name: Run tests
+        run: just test
+        working-directory: tests
