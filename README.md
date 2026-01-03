@@ -14,10 +14,17 @@ what-size supports Yazi on Linux, macOS, and Windows.
 
 ### Yazi
 
-- yazi `25.5.28` and onwards since commit `c5c939b` ([link](https://github.com/pirafrank/what-size.yazi/commit/c5c939bb37ec1d132c942cf5724d4e847acc2977))
-- yazi `25.x`-`25.4.8` since commit `fce1778` ([link](https://github.com/pirafrank/what-size.yazi/commit/fce1778d911621dc57796cdfdf11dcda3c2e28de))
-- yazi `0.4.x` since commit `2780de5` ([link](https://github.com/pirafrank/what-size.yazi/commit/2780de5aeef1ed16d1973dd6e0cd4d630c900d56))
-- yazi `0.3.x` up to commit `f08f7f2` ([link](https://github.com/pirafrank/what-size.yazi/commit/f08f7f2d5c94958ac4cb66c51a7c24b4319c6c93))
+In an effort to make things easy, I keep `compatibility/yazi-x.y.z` branches with each pointing to the most up-to-date commit compatible with yazi release `x.y.z`. Full table below.
+
+|Yazi releases|what-size branch name|
+|---|---|
+|*[latest stable](https://github.com/sxyazi/yazi/releases/latest)*|`main`|
+|`25.5.28`|`compatibility/yazi-25.5.28`|
+|`25.x`-`25.4.8`|`compatibility/yazi-25.4.8`|
+|`0.4.x`|`compatibility/yazi-0.4.x`|
+|`0.3.x`|`compatibility/yazi-0.3.x`|
+
+Please notice that `nightly` releses may work but are not explicitly supported.
 
 ## Requirements
 
@@ -37,9 +44,8 @@ what-size supports Yazi on Linux, macOS, and Windows.
 ya pkg add pirafrank/what-size
 ```
 
-or
+or (**DEPRECATED** - use only for yazi `25.4.8` and older):
 
-**DEPRECATED**
 ```sh
 ya pack -a 'pirafrank/what-size'
 ```
@@ -63,14 +69,14 @@ If you want to copy the result to clipboard, you can add `--clipboard` or `-c` a
 [[mgr.prepend_keymap]]
 on   = [ ".", "s" ]
 run  = "plugin what-size -- '--clipboard'"
-desc = "Calc size of selection or cwd"
+desc = "Calc size of sel/cwd + paste to clipboard"
 ```
 
 ```toml
 [[mgr.prepend_keymap]]
 on = [ ".", "s" ]
 run = "plugin what-size -- '-c'"
-desc = "Calc size of selection or cwd"
+desc = "Calc size of sel/cwd + paste to clipboard"
 ```
 
 Change to whatever keybinding you like.
@@ -105,15 +111,13 @@ Logs will be saved to `~.local/state/yazi/yazi.log` file.
 
 ### Plugin definition
 
-Run the following to add the `types` plugin dependency:
+The repo already has a `.luarc.json` file. You only need to run the following to add the `types` plugin dependency:
 
 ```sh
 ya pkg add yazi-rs/plugins:types
 ```
 
-Docs:
-
-- https://github.com/yazi-rs/plugins/tree/main/types.yazi
+as per the [docs](https://github.com/yazi-rs/plugins/tree/main/types.yazi).
 
 ## Contributing
 
