@@ -1,0 +1,40 @@
+# @pirafrank 2025
+# Justfile for the tests directory
+# subset of the main Justfile in https://github.com/pirafrank/poof/tree/main/justfile
+
+# Default recipe (shows help)
+# This must be the first recipe in the file
+
+default:
+  just --list
+
+# Check the code for errors
+check:
+    cargo check --tests 2>&1
+
+# Run the formatter
+fmt:
+  cargo fmt
+
+# Run the formatter (checks only)
+fmt-check:
+  cargo fmt -- --check
+
+# Run the linter on all files (exclude dependencies)
+lint:
+  cargo clippy -- --no-deps -D warnings
+
+# Run the formatter and linter on all source files
+better: fmt lint
+
+# Auto-fix clippy warnings
+fix:
+  cargo clippy -- --no-deps -D warnings --fix --allow-dirty
+
+# Run all tests
+test:
+  cargo test -- --nocapture
+
+# Get errors and warnings without running the tests
+warnings:
+  cargo test --no-run 2>&1 | grep -A 5 "warning\|error" || true

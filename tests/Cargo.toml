@@ -11,3 +11,5 @@ license = "MIT"
 [dev-dependencies]
 portable-pty = "0.9"
 vt100 = "0.16"
+serial_test = "3"
+tempfile = "3"
