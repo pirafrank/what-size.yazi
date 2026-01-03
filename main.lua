@@ -118,8 +118,8 @@ local set_separator = ya.sync(function(state, table)
         state.LEFT = table.LEFT
         state.RIGHT = table.RIGHT
     else
-        state.LEFT = ""
-        state.RIGHT = ""
+        state.LEFT = " "
+        state.RIGHT = " "
     end
 end)
 -- }}}1
