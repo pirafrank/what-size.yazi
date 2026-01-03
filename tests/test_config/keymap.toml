@@ -1,0 +1,7 @@
+[mgr]
+
+prepend_keymap = [
+  # show size of folder
+  { on   = [ ".", "s" ], run  = "plugin what-size", desc = "Calc size of selection or cwd" },
+  { on   = [ ".", "y" ], run  = "plugin what-size -- '-c'", desc = "Calc size + copy to clipboard" }
+]

@@ -1,0 +1,13 @@
+[package]
+name = "what-size-yazi-tester"
+authors = ["Francesco Pira (pirafrank)"]
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/pirafrank/what-size.yazi"
+documentation = "https://github.com/pirafrank/what-size.yazi/blob/main/README.md"
+description = ""
+license = "MIT"
+
+[dev-dependencies]
+portable-pty = "0.9"
+vt100 = "0.16"
