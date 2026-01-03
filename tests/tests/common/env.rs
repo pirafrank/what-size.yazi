@@ -4,6 +4,12 @@ use std::path::PathBuf;
 pub const PTY_COLS: u16 = 120;
 pub const PTY_ROWS: u16 = 40;
 
+/// Test configuration directory path relative to the Cargo.toml file
+const TEST_CONFIG_DIR: &str = "tests/test_config";
+
+/// Plugin name
+const PLUGIN_NAME: &str = "what-size.yazi";
+
 /// Helper function to create a test directory with sample files
 pub fn setup_test_dir() -> PathBuf {
     let test_dir = env::temp_dir().join(format!("yazi_test_what_size_{}", std::process::id()));
@@ -28,7 +34,13 @@ pub fn setup_test_dir() -> PathBuf {
 
 /// Copy test config files to the temporary config directory
 pub fn copy_test_config(plugin_dir: &PathBuf, config_dir: &PathBuf) {
-    let test_config_dir = plugin_dir.join("tests/test_config");
+    // try reading the config dir to use for tests from env var (useful for CI)
+    // otherwise fallback to default relative path.
+    let test_config_dir: PathBuf = if let Ok(env_path) = env::var("TEST_CONFIG_DIR") {
+        PathBuf::from(env_path)
+    } else {
+        plugin_dir.join(TEST_CONFIG_DIR)
+    };
 
     if test_config_dir.exists() {
         for entry in
@@ -44,9 +56,10 @@ pub fn copy_test_config(plugin_dir: &PathBuf, config_dir: &PathBuf) {
 
 /// Create plugin symlink in the config directory
 pub fn create_plugin_symlink(plugin_dir: &PathBuf, config_dir: &PathBuf) {
+    // 'plugins' is Yazi plugins directory
     let plugins_dir = config_dir.join("plugins");
     std::fs::create_dir_all(&plugins_dir).expect("Failed to create plugins dir");
-    let plugin_link = plugins_dir.join("what-size.yazi");
+    let plugin_link = plugins_dir.join(PLUGIN_NAME);
 
     #[cfg(unix)]
     std::os::unix::fs::symlink(&plugin_dir, &plugin_link).expect("Failed to create plugin symlink");

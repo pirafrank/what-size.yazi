@@ -32,8 +32,10 @@ fix:
   cargo clippy -- --no-deps -D warnings --fix --allow-dirty
 
 # Run all tests
+# Note: do NOT use the `--nocapture` flag here unless you want to debug
+#       or it will pollute the terminal with partial yazi TUI in output.
 test:
-  cargo test -- --nocapture
+  cargo test
 
 # Get errors and warnings without running the tests
 warnings:

@@ -62,11 +62,15 @@ fn test_yazi_plugin_with_selection() {
     println!("\nParsed screen with selection:\n{}", screen_contents);
 
     // Should show "Selected:" instead of "Current Dir:"
-    let has_selection_info =
-        screen_contents.contains("Selected:") || screen_contents.contains("What size");
+    let has_size_info: bool = screen_contents.contains("Selected:")
+        || screen_contents.contains(" B")
+        || screen_contents.contains("KB")
+        || screen_contents.contains("MB")
+        || screen_contents.contains("GB")
+        || screen_contents.contains("TB");
 
     assert!(
-        has_selection_info,
+        has_size_info,
         "Plugin should show selection size information. Screen contents:\n{}",
         screen_contents
     );

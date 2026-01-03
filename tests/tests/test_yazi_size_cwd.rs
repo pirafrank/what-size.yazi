@@ -78,12 +78,12 @@ fn test_yazi_loads_with_plugin() {
 
     // Check if the plugin notification or size appears
     // The plugin should show "What size" notification with size information
-    let has_size_info = screen_contents.contains("What size") ||
-                        screen_contents.contains("Current Dir:") ||
-                        screen_contents.contains("Selected:") ||
-                        screen_contents.contains("B") || // Size unit
-                        screen_contents.contains("KB") ||
-                        screen_contents.contains("MB");
+    let has_size_info: bool = screen_contents.contains("Current Dir:")
+        || screen_contents.contains(" B")
+        || screen_contents.contains("KB")
+        || screen_contents.contains("MB")
+        || screen_contents.contains("GB")
+        || screen_contents.contains("TB");
 
     assert!(
         has_size_info,
