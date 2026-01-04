@@ -26,8 +26,17 @@ jobs:
       - name: Setup just runner
         uses: extractions/setup-just@v2
 
-      - name: Install yazi
-        run: cargo install --locked yazi
+      - name: Install latest yazi
+        run: |
+          curl -L \
+            https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-gnu.zip \
+            -o yazi.zip
+          unzip -q yazi.zip -d yazi-tmp
+          sudo mv yazi-tmp/*/{yazi,ya} /usr/local/bin/
+          sudo chmod +x /usr/local/bin/yazi /usr/local/bin/ya
+          rm -rf yazi.zip yazi-tmp
+      - name: Check Yazi
+        run: yazi --version
 
       - name: Install clipboard and xvfb
         run: sudo apt-get update && sudo apt-get install -y xclip xvfb
