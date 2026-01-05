@@ -160,7 +160,7 @@ local set_ui_line = function(state)
             return ui.Span(sep_left .. get_state("size") .. sep_right)
         else
             -- NOTE [2]: Set this line if want to clear the value in the
-            -- statusline when move the cursor, after calculating WITH 
+            -- statusline when move the cursor, after calculating WITH
             -- selection: return ui.Span(sep_left .. get_state("size") .. sep_right)
             -- or just remove after the unselection like below
             return ""
@@ -175,7 +175,7 @@ return {
         local clipboard = job.args.clipboard or job.args[1] == '-c'
 
         local selected = get_selected_paths()
-        local prepend_msg = ""
+        local prepend_msg
         -- Keep showing the size after CWD calculation (no selections)
         if #selected == 0 then
             set_state("is_held", true)
