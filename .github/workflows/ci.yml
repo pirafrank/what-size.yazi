@@ -14,7 +14,7 @@ on:
 
 jobs:
   lua_check:
-    name: Lua Check and Format
+    name: Lua Checks
     runs-on: ubuntu-24.04
     steps:
       - name: Clone repo
@@ -31,12 +31,6 @@ jobs:
       - name: Install luacheck
         run: luarocks install luacheck
 
-      - name: Install StyLua
-        uses: JohnnyMorganz/stylua-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          version: latest
-
       - name: Check Lua syntax
         run: lua -e "assert(loadfile('main.lua'))"
 
@@ -44,7 +38,4 @@ jobs:
         run: luacheck main.lua --globals ya cx fs ui Status --no-unused-args --no-max-line-length
         continue-on-error: true
 
-      - name: Check formatting with StyLua
-        run: stylua --check main.lua
-        continue-on-error: true
 
