@@ -1,8 +1,9 @@
+use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use serial_test::serial;
 use std::thread;
 use std::time::Duration;
-use cli_clipboard::{ClipboardContext, ClipboardProvider};
 
+use ntest::timeout;
 mod common;
 use common::env::*;
 use common::fixtures::{YaziTestConfig, YaziTestFixture};
@@ -10,6 +11,7 @@ use common::pty_helpers::*;
 
 #[test]
 #[serial]
+#[timeout(90000)]
 /**
  * The test does the following:
  * 1. Spawns Yazi in a PTY with the plugin loaded
@@ -39,8 +41,7 @@ fn test_yazi_plugin_copies_to_clipboard() {
         .expect("Failed to read initial output");
 
     // Clear clipboard before test
-    let mut ctx = ClipboardContext::new()
-        .expect("Failed to create clipboard context");
+    let mut ctx = ClipboardContext::new().expect("Failed to create clipboard context");
     ctx.set_contents(String::new())
         .expect("Failed to clear clipboard");
 
@@ -56,32 +57,24 @@ fn test_yazi_plugin_copies_to_clipboard() {
     let plugin_output = read_pty_output(&mut fixture.reader, Duration::from_secs(2))
         .expect("Failed to read plugin output");
 
-    let plugin_output_str = String::from_utf8_lossy(&plugin_output);
-    println!("\nPlugin output:\n{}", plugin_output_str);
-
     // Parse screen to verify TUI output
     let mut parser = vt100::Parser::new(PTY_ROWS, PTY_COLS, 0);
     parser.process(&plugin_output);
     let screen = parser.screen();
     let screen_contents = screen.contents();
 
-    println!("\nParsed screen:\n{}", screen_contents);
-
-    
     assert!(
         screen_contents.contains("Copied to clipboard") && screen_contents.contains("Current Dir:"),
-        "TUI should show 'Copied to clipboard' and 'Current Dir:' messages. Screen contents:\n{}",
-        screen_contents
+        "TUI should show 'Copied to clipboard' and 'Current Dir:' messages.",
     );
 
     // Verify clipboard actually contains the size
-    let clipboard_content = ctx.get_contents()
-        .expect("Failed to read clipboard");
-    
+    let clipboard_content = ctx.get_contents().expect("Failed to read clipboard");
+
     println!("\nClipboard content: '{}'", clipboard_content);
 
     // Check that clipboard contains a size string (e.g., "11.00 B")
-    let has_size = clipboard_content.contains(" B") 
+    let has_size = clipboard_content.contains(" B")
         || clipboard_content.contains("KB")
         || clipboard_content.contains("MB")
         || clipboard_content.contains("GB")
@@ -95,8 +88,11 @@ fn test_yazi_plugin_copies_to_clipboard() {
 
     // Quit
     send_keys(&mut fixture.writer, "q").expect("Failed to send 'q'");
-    // ... and wait for process to exit
-    thread::sleep(Duration::from_secs(1));
+
+    // Wait for yazi to actually exit (with timeout)
+    println!("\nWaiting for Yazi to exit...");
+    wait_for_exit(&mut fixture.child, Duration::from_secs(5))
+        .expect("Yazi did not exit within timeout");
 
     // All done!
     // Cleanup is automatically handled by the fixture via Drop impl

@@ -35,6 +35,7 @@ jobs:
           sudo mv yazi-tmp/*/{yazi,ya} /usr/local/bin/
           sudo chmod +x /usr/local/bin/yazi /usr/local/bin/ya
           rm -rf yazi.zip yazi-tmp
+
       - name: Check Yazi
         run: yazi --version
 
@@ -44,3 +45,4 @@ jobs:
       - name: Run tests
         run: just test
         working-directory: tests
+        timeout-minutes: 10

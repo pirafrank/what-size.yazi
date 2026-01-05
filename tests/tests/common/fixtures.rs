@@ -3,6 +3,8 @@ use portable_pty::{Child, CommandBuilder, NativePtySystem, PtySize, PtySystem};
 use std::env;
 use std::io::{Read, Write};
 use std::path::PathBuf;
+use std::thread;
+use std::time::{Duration, Instant};
 
 /// Configuration for Yazi test setup
 pub struct YaziTestConfig {
@@ -71,6 +73,36 @@ impl Drop for YaziTestFixture {
     fn drop(&mut self) {
         // Kill the process
         let _ = self.child.kill();
+
+        // Wait for process to actually exit (with timeout)
+        let timeout = Duration::from_secs(5);
+        let start = Instant::now();
+
+        while start.elapsed() < timeout {
+            match self.child.try_wait() {
+                Ok(Some(_)) => {
+                    println!("Yazi process exited successfully during cleanup");
+                    break;
+                }
+                Ok(None) => {
+                    // Process still running, sleep a bit
+                    thread::sleep(Duration::from_millis(100));
+                }
+                Err(e) => {
+                    eprintln!("Error waiting for Yazi process: {}", e);
+                    break;
+                }
+            }
+        }
+
+        // If still running after timeout, force kill again
+        if start.elapsed() >= timeout {
+            eprintln!("Yazi process did not exit within timeout, forcing kill");
+            let _ = self.child.kill();
+        }
+
+        // Final wait to reap the process and avoid zombies
+        let _ = self.child.wait();
 
         // Cleanup directories
         let _ = std::fs::remove_dir_all(&self.test_dir);

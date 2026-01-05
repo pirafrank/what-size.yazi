@@ -1,3 +1,4 @@
+use ntest::timeout;
 use serial_test::serial;
 use std::thread;
 use std::time::Duration;
@@ -10,6 +11,7 @@ use common::pty_helpers::*;
 
 #[test]
 #[serial]
+#[timeout(90000)]
 /**
  * The test does the following:
  * 1. Spawns Yazi in a PTY with the plugin loaded
@@ -38,16 +40,11 @@ fn test_yazi_loads_with_plugin() {
     let output = read_pty_output(&mut fixture.reader, Duration::from_secs(3))
         .expect("Failed to read initial output");
 
-    let output_str = String::from_utf8_lossy(&output);
-    println!("Initial yazi output:\n{}", output_str);
-
     // Parse with vt100 to check what's displayed
     let mut parser = vt100::Parser::new(PTY_ROWS, PTY_COLS, 0);
     parser.process(&output);
     let screen = parser.screen();
     let screen_contents = screen.contents();
-
-    println!("\nParsed screen contents:\n{}", screen_contents);
 
     // Basic check: yazi should be running and showing something
     assert!(
@@ -66,15 +63,10 @@ fn test_yazi_loads_with_plugin() {
     let plugin_output = read_pty_output(&mut fixture.reader, Duration::from_secs(3))
         .expect("Failed to read plugin output");
 
-    let plugin_output_str = String::from_utf8_lossy(&plugin_output);
-    println!("\nPlugin output:\n{}", plugin_output_str);
-
     // Parse the new screen state
     parser.process(&plugin_output);
     let screen = parser.screen();
     let screen_contents = screen.contents();
-
-    println!("\nParsed screen after plugin trigger:\n{}", screen_contents);
 
     // Check if the plugin notification or size appears
     // The plugin should show "What size" notification with size information
@@ -93,8 +85,11 @@ fn test_yazi_loads_with_plugin() {
 
     // Quit...
     send_keys(&mut fixture.writer, "q").expect("Failed to send 'q'");
-    // ... and wait for process to exit
-    thread::sleep(Duration::from_secs(1));
+
+    // Wait for yazi to actually exit (with timeout)
+    println!("\nWaiting for Yazi to exit...");
+    wait_for_exit(&mut fixture.child, Duration::from_secs(5))
+        .expect("Yazi did not exit within timeout");
 
     // All done!
     // Cleanup is automatically handled by the fixture via Drop impl

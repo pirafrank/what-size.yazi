@@ -52,4 +52,5 @@ Note: this may pollute your terminal because of printing of PTY content to sysou
 - Tests run Yazi with `YAZI_LOG=debug` for debugging
 - Terminal response timeouts are expected in PTY environment
 - Tests use process ID to create unique temp directories
-- Cleanup happens automatically after each test
+- Each test waits for Yazi to properly exit with a 5-second timeout
+- Cleanup happens automatically after each test via Drop implementation

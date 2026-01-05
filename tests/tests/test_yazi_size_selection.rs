@@ -7,9 +7,11 @@ mod common;
 use common::env::*;
 use common::fixtures::{YaziTestConfig, YaziTestFixture};
 use common::pty_helpers::*;
+use ntest::timeout;
 
 #[test]
 #[serial]
+#[timeout(90000)]
 /**
  * The test does the following:
  * 1. Launches Yazi and selects a file using Space
@@ -59,8 +61,6 @@ fn test_yazi_plugin_with_selection() {
     let screen = parser.screen();
     let screen_contents = screen.contents();
 
-    println!("\nParsed screen with selection:\n{}", screen_contents);
-
     // Should show "Selected:" instead of "Current Dir:"
     let has_size_info: bool = screen_contents.contains("Selected:")
         || screen_contents.contains(" B")
@@ -77,8 +77,11 @@ fn test_yazi_plugin_with_selection() {
 
     // Quit...
     send_keys(&mut fixture.writer, "q").expect("Failed to send 'q'");
-    // ... and wait for process to exit
-    thread::sleep(Duration::from_secs(1));
+
+    // Wait for yazi to actually exit (with timeout)
+    println!("\nWaiting for Yazi to exit...");
+    wait_for_exit(&mut fixture.child, Duration::from_secs(5))
+        .expect("Yazi did not exit within timeout");
 
     // All done!
     // Cleanup is automatically handled by the fixture via Drop impl

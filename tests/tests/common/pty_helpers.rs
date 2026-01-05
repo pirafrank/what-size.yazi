@@ -1,3 +1,4 @@
+use portable_pty::Child;
 use std::io::{Read, Write};
 use std::thread;
 use std::time::Duration;
@@ -51,4 +52,32 @@ pub fn send_keys(writer: &mut Box<dyn Write + Send>, keys: &str) -> Result<(), S
     // Give yazi time to process the keys
     thread::sleep(Duration::from_millis(500));
     Ok(())
+}
+
+/// Helper function to wait for a process to exit with timeout
+#[allow(dead_code)]
+pub fn wait_for_exit(
+    child: &mut Box<dyn Child + Send + Sync>,
+    timeout: Duration,
+) -> Result<(), String> {
+    let start = Instant::now();
+
+    loop {
+        match child.try_wait() {
+            Ok(Some(exit_status)) => {
+                println!("Process exited with status: {:?}", exit_status);
+                return Ok(());
+            }
+            Ok(None) => {
+                // Process still running
+                if start.elapsed() > timeout {
+                    return Err(format!("Process did not exit within {:?} timeout", timeout));
+                }
+                thread::sleep(Duration::from_millis(100));
+            }
+            Err(e) => {
+                return Err(format!("Error waiting for process: {}", e));
+            }
+        }
+    }
 }
