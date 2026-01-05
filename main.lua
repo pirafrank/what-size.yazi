@@ -5,7 +5,7 @@
 -- TODO: Asynchronous calculating and dynamic displaying in statusline,
 -- perhaps by using this:
 --      https://yazi-rs.github.io/docs/plugins/utils/#ps.sub
--- and by using ya.render() method
+-- and by using ui.render() method
 -- See also:
 --      https://github.com/sxyazi/yazi/pull/1903
 --      https://yazi-rs.github.io/docs/dds/#kinds
@@ -130,7 +130,7 @@ end)
 -- }}}1
 -- Redraw statusline {{{1
 local redraw_statusline = ya.sync(function(state)
-    ya.render()
+    ui.render()
 end)
 -- }}}1
 -- Set ui line in statusline for size, clean up when no selection exists {{{1
