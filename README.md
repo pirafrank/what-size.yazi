@@ -19,7 +19,7 @@ In an effort to make things easy, I keep `compatibility/yazi-x.y.z` branches wit
 |Yazi releases|what-size branch name|
 |---|---|
 |*[latest stable](https://github.com/sxyazi/yazi/releases/latest)*|`main`|
-|`25.5.28`|`compatibility/yazi-25.5.28`|
+|`25.5.28`-`26.5.6`|`compatibility/yazi-25.5.28`|
 |`25.x`-`25.4.8`|`compatibility/yazi-25.4.8`|
 |`0.4.x`|`compatibility/yazi-0.4.x`|
 |`0.3.x`|`compatibility/yazi-0.3.x`|
