@@ -20,8 +20,8 @@
 local get_selected_paths = ya.sync(function(state)
     local result = {}
     if cx and cx.active and cx.active.selected then
-        for _, url in pairs(cx.active.selected) do
-            result[#result + 1] = url
+        for _, file in pairs(cx.active.selected) do
+            result[#result + 1] = file.url or file
         end
     end
     return result
