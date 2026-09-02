@@ -5,10 +5,12 @@ on:
   push:
     paths:
       - '**.lua'
+      - 'justfile'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
       - '**.lua'
+      - 'justfile'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
 
@@ -19,6 +21,15 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@v6
+
+      - name: Setup Just
+        uses: extractions/setup-just@v4
+
+      - name: Setup poof and install packages
+        uses: pirafrank/poof@main
+        with:
+          packages: |
+            JohnnyMorganz/StyLua
 
       - name: Setup Lua
         uses: leafo/gh-actions-lua@v12
@@ -31,11 +42,5 @@ jobs:
       - name: Install luacheck
         run: luarocks install luacheck
 
-      - name: Check Lua syntax
-        run: lua -e "assert(loadfile('main.lua'))"
-
-      - name: Run luacheck
-        run: luacheck main.lua --globals ya cx fs ui Status --no-unused-args --no-max-line-length
-        continue-on-error: true
-
-
+      - name: Run Lua checks
+        run: just ci

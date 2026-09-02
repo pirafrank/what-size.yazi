@@ -15,7 +15,7 @@ e2e: test
 check:
     lua -e "assert(loadfile('main.lua'))"
 
-# Match the luacheck invocation from .github/workflows/ci.yml.
+# Perform a lint check on the plugin source with luacheck.
 lint:
     luacheck main.lua --globals ya cx fs ui Status --no-unused-args --no-max-line-length
 
@@ -23,9 +23,16 @@ lint:
 fmt:
     stylua main.lua
 
+# Use StyLua to check that the plugin source is formatted correctly.
+fmt-check:
+    stylua --check main.lua
+
 # Install the latest pre-built StyLua release through poof.
 setup-stylua:
     poof install JohnnyMorganz/StyLua
 
-# Run the two Lua checks used by the static CI workflow.
-better: check fmt lint
+# Run Lua checks used by the static CI workflow and than format code.
+better: check lint fmt
+
+# Run the same tests CI pipeline runs
+ci: check fmt-check lint
