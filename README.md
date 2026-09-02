@@ -26,17 +26,21 @@ In an effort to make things easy, I keep `compatibility/yazi-x.y.z` branches wit
 
 Please notice that `nightly` releses may work but are not explicitly supported.
 
-## Requirements
+## Minimum Yazi version
+
+You can check the current minimum required Yazi version [at the beginning of the `main.lua` file](https://github.com/pirafrank/what-size.yazi/blob/main/main.lua#L1), as per [Yazi guidelines](https://yazi-rs.github.io/docs/plugins/overview/#@since).
+
+## Additional Requirements
+
+### On Yazi's version 25.5.28 or newer
+
+- No requirement
 
 ### Before Yazi's version 25.5.28
 
 - Use this commit: [Old version](https://github.com/pirafrank/what-size.yazi/commit/d8966568f2a80394bf1f9a1ace6708ddd4cc8154)
 - `du` on Linux and macOS
 - PowerShell on Windows
-
-### On Yazi's version 25.5.28 or newer
-
-- No requirement
 
 ## Installation
 

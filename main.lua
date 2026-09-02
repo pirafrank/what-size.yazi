@@ -1,5 +1,5 @@
---- @since 25.5.28
--- This plugin is now only supporting Yazi's version 25.5.28 or newer
+--- @since 26.8.15
+-- This plugin is now only supporting Yazi's version 26.8.15 or newer
 -- since commit https://github.com/sxyazi/yazi/pull/2695
 
 -- TODO: Asynchronous calculating and dynamic displaying in statusline,
@@ -20,8 +20,11 @@
 local get_selected_paths = ya.sync(function(state)
     local result = {}
     if cx and cx.active and cx.active.selected then
-        for _, url in pairs(cx.active.selected) do
-            result[#result + 1] = url
+        -- Since Yazi v26.8.15 DDS events return File objects
+        -- instead of Url from __pairs().
+        -- Source: https://github.com/sxyazi/yazi/pull/4096
+        for _, file in pairs(cx.active.selected) do
+            result[#result + 1] = file.url or file
         end
     end
     return result
@@ -73,7 +76,22 @@ end
 local function get_total_size(items)
     local total = 0
     for _, url in ipairs(items) do
-        local it = fs.calc_size(url)
+        -- Error handling:
+        -- entry already handles a nil return from get_total_size with its
+        -- "Failed to calculate size" notification.
+        -- Credits @farangkao on issue #25
+        -- file.url exists only on Yazi vv26.8.15+, where pairs() yields File
+        -- objects instead of Urls (https://github.com/sxyazi/yazi/pull/4096).
+        local it, err = fs.calc_size(url)
+        if not it then
+            ya.notify {
+                title = "What size",
+                content = "Failed to calculate size: " .. tostring(err or "unknown error"),
+                timeout = 5,
+                level = "error",
+            }
+            return nil
+        end
         while true do
             local next = it:recv()
             if next then
@@ -169,7 +187,6 @@ local set_ui_line = function(state)
 end
 -- }}}1
 
---- @since 25.12.29
 return {
     entry = function(self, job)
         local clipboard = job.args.clipboard or job.args[1] == '-c'
