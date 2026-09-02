@@ -1,5 +1,7 @@
 # what-size.yazi
 
+[![CI](https://github.com/pirafrank/what-size.yazi/actions/workflows/ci.yml/badge.svg)](https://github.com/pirafrank/what-size.yazi/actions/workflows/ci.yml)
+
 A plugin for [yazi](https://github.com/sxyazi/yazi) to calculate the size of the current selection or the current working directory (if no selection is made).
 
 ## Compatibility
@@ -141,7 +143,7 @@ just test           # Run the Yazi compatibility suite with shell tracing
 just fmt            # Format main.lua with StyLua
 just check          # Check Lua syntax
 just lint           # Run Luacheck
-just better         # Run both Lua checks
+just better         # Run Lua checks and format the source
 just setup-stylua   # Install StyLua through poof
 ```
 
@@ -205,6 +207,8 @@ When running on GitHub Actions:
 ## Contributing
 
 Contributions are welcome. Please fork the repository and submit a PR.
+
+The Lua formatter MUST be run before submitting changes that touch Lua files. You can run it with: `just fmt`.
 
 ## License
 
