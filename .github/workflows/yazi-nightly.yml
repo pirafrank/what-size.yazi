@@ -1,0 +1,48 @@
+name: Yazi nightly canary
+
+on:
+  schedule:
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nightly:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      # Nightly is intentionally a canary. This workflow has no issue-write
+      # permission, even when the compatibility test fails.
+      - name: Setup poof
+        uses: pirafrank/poof@v0.6.2
+        with:
+          version: v0.6.2
+
+      - name: Install compatibility tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tmux
+
+      - name: Install Yazi nightly with poof
+        run: poof install sxyazi/yazi -t nightly
+      - name: Run Yazi nightly compatibility harness
+        env:
+          YAZI_VERSION: nightly
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-nightly-nightly
+        run: tests/e2e/run.sh
+      - name: Package nightly diagnostics
+        if: always()
+        env:
+          YAZI_VERSION: nightly
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-nightly-nightly
+        run: tests/e2e/package-diagnostics.sh
+      - name: Upload nightly diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: what-size-yazi-nightly-diagnostics
+          path: what-size-yazi-nightly-diagnostics.tar.gz
+          retention-days: 90

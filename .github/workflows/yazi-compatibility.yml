@@ -1,0 +1,173 @@
+name: Yazi compatibility
+
+on:
+  pull_request:
+    paths:
+      - '**.lua'
+      - 'tests/e2e/**'
+      - '.github/workflows/yazi-compatibility.yml'
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      yazi_version:
+        description: 'Optional exact Yazi version, for example v26.8.15'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-pr-stable:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    outputs:
+      versions: ${{ steps.resolve.outputs.versions }}
+    steps:
+      - id: resolve
+        name: Resolve latest stable Yazi
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "versions=$(gh api repos/sxyazi/yazi/releases/latest --jq '[.tag_name]')" >> "$GITHUB_OUTPUT"
+
+  resolve-scheduled-stable:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    outputs:
+      versions: ${{ steps.resolve.outputs.versions }}
+    steps:
+      - id: resolve
+        name: Resolve recent stable Yazi releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_VERSION: ${{ inputs.yazi_version }}
+        run: |
+          if [[ -n "$REQUESTED_VERSION" ]]; then
+            jq -cn --arg v "$REQUESTED_VERSION" '[$v]' > versions.json
+          else
+            cutoff=$(date -u -d '48 hours ago' +%s)
+            gh api --paginate 'repos/sxyazi/yazi/releases?per_page=100' |
+              jq -s --argjson cutoff "$cutoff" '[.[][] | select(.draft == false and .prerelease == false and ((.published_at | fromdateiso8601) >= $cutoff)) | .tag_name] | unique' > versions.json
+            latest=$(gh api repos/sxyazi/yazi/releases/latest --jq .tag_name)
+            jq --arg latest "$latest" '. + [$latest] | unique' versions.json > versions.tmp
+            mv versions.tmp versions.json
+          fi
+          echo "versions=$(jq -c . versions.json)" >> "$GITHUB_OUTPUT"
+
+  # Trusted stable-release watcher. This job may create or update issues,
+  # so it is restricted to scheduled and manual runs from this repository.
+  test:
+    needs: resolve-scheduled-stable
+    if: needs.resolve-scheduled-stable.result == 'success'
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        yazi-version: ${{ fromJSON(needs.resolve-scheduled-stable.outputs.versions) }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      # Setup poof is the trusted CI bootstrap. The harness intentionally does
+      # not install tools from the network when running on GitHub Actions.
+      - name: Setup poof
+        uses: pirafrank/poof@v0.6.2
+        with:
+          version: v0.6.2
+
+      - name: Install compatibility tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tmux jq
+
+      - name: Install Yazi with poof
+        run: poof install sxyazi/yazi -t "${{ matrix.yazi-version }}"
+      - name: Run Yazi compatibility harness
+        env:
+          YAZI_VERSION: ${{ matrix.yazi-version }}
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-stable-${{ matrix.yazi-version }}
+        run: tests/e2e/run.sh
+      - name: Package diagnostics
+        if: always()
+        env:
+          YAZI_VERSION: ${{ matrix.yazi-version }}
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-stable-${{ matrix.yazi-version }}
+        run: tests/e2e/package-diagnostics.sh
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: what-size-yazi-${{ matrix.yazi-version }}-diagnostics
+          path: ${{ env.DIAGNOSTIC_ARCHIVE }}
+          retention-days: 90
+      - name: Create or update stable compatibility issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ matrix.yazi-version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+          ARTIFACT: what-size-yazi-${{ matrix.yazi-version }}-diagnostics
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-stable-${{ matrix.yazi-version }}
+        run: |
+          scenario=$(cat "$TEST_ROOT/diagnostics/failed-scenario" 2>/dev/null || echo unknown)
+          title="Compatibility: Yazi $VERSION"
+          number=$(gh issue list --state open --search "in:title $title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n1)
+          body=$(printf 'Automatic compatibility testing detected a failure with Yazi %s.\n\nwhat-size commit: %s\nYazi version: %s\nFailed scenario: %s\nWorkflow run: %s\n\nDiagnostics artifact: %s' "$VERSION" "$COMMIT" "$VERSION" "$scenario" "$RUN_URL" "$ARTIFACT")
+          if [[ -n "$number" ]]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
+
+  # Pull-request compatibility check. It tests the proposed checkout against
+  # the latest stable Yazi, but deliberately has no issue-write permission.
+  # Keep this separate from `test`: fork PR code must never run in a job that
+  # can modify repository issues.
+  pr-test:
+    needs: resolve-pr-stable
+    if: needs.resolve-pr-stable.result == 'success'
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        yazi-version: ${{ fromJSON(needs.resolve-pr-stable.outputs.versions) }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      # PR jobs have read-only permissions and exercise the checked-out source.
+      - name: Setup poof
+        uses: pirafrank/poof@v0.6.2
+        with:
+          version: v0.6.2
+
+      - name: Install compatibility tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tmux jq
+
+      - name: Install Yazi with poof
+        run: poof install sxyazi/yazi -t "${{ matrix.yazi-version }}"
+      - name: Run Yazi compatibility harness
+        env:
+          YAZI_VERSION: ${{ matrix.yazi-version }}
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-stable-${{ matrix.yazi-version }}
+        run: tests/e2e/run.sh
+      - name: Package diagnostics
+        if: always()
+        env:
+          YAZI_VERSION: ${{ matrix.yazi-version }}
+          TEST_ROOT: ${{ runner.temp }}/what-size-e2e-stable-${{ matrix.yazi-version }}
+        run: tests/e2e/package-diagnostics.sh
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: what-size-yazi-${{ matrix.yazi-version }}-diagnostics
+          path: what-size-yazi-${{ matrix.yazi-version }}-diagnostics.tar.gz
+          retention-days: 90
